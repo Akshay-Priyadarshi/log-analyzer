@@ -38,7 +38,9 @@ class LogInsightsAgentExecutor(BaseAdkAgentExecutor):
         )
 
     async def run(self, user_message: str, user_id: str = "default-user") -> InsightList:
-        """Runs the agent with the given message and returns parsed InsightList."""
+        """Runs the agent with the given message and returns
+        parsed InsightList.
+        """
         if not user_message or not user_message.strip():
             raise ValueError("user_message cannot be empty.")
 
@@ -76,4 +78,4 @@ class LogInsightsAgentExecutor(BaseAdkAgentExecutor):
             response_json = json.loads(response_text)
             return InsightList(**response_json)
         except Exception as e:
-            raise ValueError(f"Failed to parse agent response as InsightList: {e}")
+            raise e

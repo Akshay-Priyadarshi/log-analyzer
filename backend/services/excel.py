@@ -13,18 +13,24 @@ class ExcelService:
 
     def _load_df(self) -> pd.DataFrame:
         try:
-            return pd.read_excel(self.file_path, sheet_name=self.sheet_name, dtype=str)
+            return pd.read_excel(
+                self.file_path,
+                sheet_name=self.sheet_name,
+                dtype=str
+            )
         except FileNotFoundError:
-            return pd.DataFrame(columns=[self.id_column])  # create empty if not exists
+            return pd.DataFrame(columns=[self.id_column])
 
-    def _save_df(self, df: pd.DataFrame):
+    def _save_df(self, df: pd.DataFrame) -> None:
         with pd.ExcelWriter(self.file_path, mode="w", engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name=self.sheet_name)
 
     def create_row(self, row: dict[str, Any]):
         df = self._load_df()
         if str(row[self.id_column]) in df[self.id_column].astype(str).values:
-            raise ValueError(f"Row with {self.id_column}={row[self.id_column]} already exists.")
+            raise ValueError(
+                f"Row with {self.id_column}={row[self.id_column]} already exists."
+            )
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
         self._save_df(df)
 

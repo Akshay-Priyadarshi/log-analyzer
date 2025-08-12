@@ -1,7 +1,10 @@
-import pandas as pd
-from datetime import datetime, timedelta
-import uuid
 import random
+import uuid
+
+from datetime import datetime, timedelta
+
+import pandas as pd
+
 
 # Sample data for Log attributes
 levels = ["INFO", "WARN", "ERROR", "DEBUG", "CRITICAL"]
@@ -27,7 +30,9 @@ for i in range(500):
         "id": str(uuid.uuid4()),
         "level": random.choice(levels),
         "message": f"Sample log message {i+1}",
-        "timestamp": datetime.utcnow() - timedelta(minutes=random.randint(0, 500)),
+        "timestamp": datetime.utcnow() - timedelta(
+            minutes=random.randint(0, 500)
+        ),
         "source": random.choice(sources),
         "host": random.choice(hosts),
         "application_id": random.choice(applications),
@@ -44,5 +49,3 @@ df_logs = pd.DataFrame(logs)
 # Save to Excel
 file_path = "./sample_logs.xlsx"
 df_logs.to_excel(file_path, index=False)
-
-file_path

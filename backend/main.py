@@ -1,4 +1,5 @@
 # main.py
+import dotenv
 import uvicorn
 
 from fastapi import FastAPI
@@ -7,11 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from controllers import log_router
 
 
+dotenv.load_dotenv(dotenv.find_dotenv())
+
 app = FastAPI(title="Log Monitoring API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # frontend URL here
+    allow_origins=["*"],  # frontend URL here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
