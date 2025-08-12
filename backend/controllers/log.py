@@ -7,7 +7,7 @@ from services.log import LogService
 
 
 log_router = APIRouter(prefix="/logs", tags=["Logs"])
-FILE_PATH = "./sample_logs.xlsx"
+FILE_PATH = "./sample_logs_updated.xlsx"
 SHEET_NAME = "Sheet1"
 
 
@@ -23,5 +23,4 @@ def get_logs():
 @log_router.get("/insights", response_model=InsightList)
 async def get_insights():
     """Retrieve insights about the logs."""
-    insight_list = await log_service.insights()
-    return insight_list  # Return Pydantic model directly
+    return await log_service.insights()

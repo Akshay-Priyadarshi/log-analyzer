@@ -11,10 +11,18 @@ class LogService:
     """Service for logs stored in Excel."""
 
     def __init__(self, file_path: str, sheet_name: str, id_column: str = None):
-        from agents.log_insight_agent import LogInsightsAgentExecutor
+        from agents.log_insight_agent import (  # noqa: PLC0415
+            LogInsightsAgentExecutor,
+        )
         id_column = "id" if id_column is None else id_column
-        self.excel_service = ExcelService(file_path=file_path, sheet_name=sheet_name, id_column=id_column)
-        self.log_insight_agent_executor = LogInsightsAgentExecutor(initial_state={"logs": self.read()})
+        self.excel_service = ExcelService(
+            file_path=file_path,
+            sheet_name=sheet_name,
+            id_column=id_column
+        )
+        self.log_insight_agent_executor = LogInsightsAgentExecutor(
+            initial_state={"logs": self.read()}
+        )
 
     def create(self, log: Log):
         """Create a new log entry."""
@@ -41,7 +49,9 @@ class LogService:
 
         # Convert thread_id to string if numeric
         if "thread_id" in df.columns:
-            df["thread_id"] = df["thread_id"].apply(lambda x: str(int(x)) if pd.notna(x) else None)
+            df["thread_id"] = df["thread_id"].apply(
+                lambda x: str(int(x)) if pd.notna(x) else None
+            )
 
         # Convert DataFrame rows to Log objects
         logs = []
@@ -77,7 +87,9 @@ class LogService:
 
     async def insights(self) -> InsightList:
         insights = await self.log_insight_agent_executor.run(
-            "please give all the insights after analyzing the logs"
+            f"please give all the insights after analyzing these logs\n {
+                self.read()
+            }"
         )
         if not insights:
             return "No insights found"

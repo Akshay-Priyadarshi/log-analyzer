@@ -31,7 +31,8 @@ class BaseAdkAgentExecutor:
                 callback_context.state[key] = value
 
     async def run(self, user_input: str):
-        """Runs the agent with the given user_input and returns the final result.
+        """Runs the agent with the given user_input and returns the final
+        result.
 
         This avoids A2A-specific TaskUpdater/session handling and just
         gets the raw final output from the agent.

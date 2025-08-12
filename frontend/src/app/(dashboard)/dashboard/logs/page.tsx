@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useMemo, useState } from "react";
 import { LogCard } from "@/components";
 import type { Log } from "@/schemas";
 
 const levels = ["INFO", "WARN", "ERROR", "DEBUG", "CRITICAL"];
 
-const DashboardLogs = () => {
-	const [insights, setInsights] = useState<Log[]>([]);
-	const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
-	const [error, setError] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
+const fetchLogs = async (): Promise<Log[]> => {
+	const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logs`);
+	return res.data;
+};
 
-	// Filters
+const DashboardLogs = () => {
 	const [levelFilter, setLevelFilter] = useState<string>("");
 	const [sourceFilter, setSourceFilter] = useState<string>("");
 	const [hostFilter, setHostFilter] = useState<string>("");
@@ -20,14 +21,18 @@ const DashboardLogs = () => {
 	const [appIdFilter, setAppIdFilter] = useState<string>("");
 	const [errorCodeFilter, setErrorCodeFilter] = useState<string>("");
 
-	// Date range filters (strings in yyyy-MM-dd format)
 	const [startDateFilter, setStartDateFilter] = useState<string>("");
 	const [endDateFilter, setEndDateFilter] = useState<string>("");
 
-	// Helper to get unique sorted options for a given key in logs
+	const {
+		data: logs = [],
+		isLoading,
+		error,
+	} = useQuery<Log[], Error>({ queryKey: ["logs"], queryFn: fetchLogs });
+
 	const getUniqueOptions = (key: keyof Log) => {
 		const options = new Set<string>();
-		for (const log of insights) {
+		for (const log of logs) {
 			const val = log[key];
 			if (val && typeof val === "string") options.add(val);
 		}
@@ -40,67 +45,36 @@ const DashboardLogs = () => {
 	const appIdOptions = getUniqueOptions("application_id");
 	const errorCodeOptions = getUniqueOptions("error_code");
 
-	useEffect(() => {
-		const fetchLogs = async () => {
-			try {
-				const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/logs`);
-				if (!res.ok) throw new Error("Failed to fetch logs");
-				const data: Log[] = await res.json();
-				setInsights(data);
-				setFilteredLogs(data);
-			} catch (err) {
-				setError((err as Error).message);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const filteredLogs = useMemo(() => {
+		let filtered = logs;
 
-		fetchLogs();
-	}, []);
-
-	useEffect(() => {
-		let filtered = insights;
-
-		if (levelFilter) {
+		if (levelFilter)
 			filtered = filtered.filter((log) => log.level === levelFilter);
-		}
-
-		if (sourceFilter) {
+		if (sourceFilter)
 			filtered = filtered.filter((log) => log.source === sourceFilter);
-		}
-
-		if (hostFilter) {
+		if (hostFilter)
 			filtered = filtered.filter((log) => log.host === hostFilter);
-		}
-
-		if (environmentFilter) {
+		if (environmentFilter)
 			filtered = filtered.filter(
 				(log) => log.environment === environmentFilter,
 			);
-		}
-
-		if (appIdFilter) {
+		if (appIdFilter)
 			filtered = filtered.filter((log) => log.application_id === appIdFilter);
-		}
-
-		if (errorCodeFilter) {
+		if (errorCodeFilter)
 			filtered = filtered.filter((log) => log.error_code === errorCodeFilter);
-		}
 
-		if (startDateFilter) {
+		if (startDateFilter)
 			filtered = filtered.filter(
 				(log) => new Date(log.timestamp) >= new Date(startDateFilter),
 			);
-		}
-
-		if (endDateFilter) {
+		if (endDateFilter)
 			filtered = filtered.filter(
 				(log) => new Date(log.timestamp) <= new Date(endDateFilter),
 			);
-		}
 
-		setFilteredLogs(filtered);
+		return filtered;
 	}, [
+		logs,
 		levelFilter,
 		sourceFilter,
 		hostFilter,
@@ -109,16 +83,10 @@ const DashboardLogs = () => {
 		errorCodeFilter,
 		startDateFilter,
 		endDateFilter,
-		insights,
 	]);
 
-	const memoisedFilteredLogsLength = useMemo(
-		() => filteredLogs.length,
-		[filteredLogs],
-	);
-
-	if (loading) return <div>Loading logs...</div>;
-	if (error) return <div>Failed to load logs: {error}</div>;
+	if (isLoading) return <div>Loading logs...</div>;
+	if (error) return <div>Failed to load logs: {error.message}</div>;
 
 	return (
 		<div className="w-full">
@@ -232,12 +200,12 @@ const DashboardLogs = () => {
 					</label>
 				</div>
 			</div>
-			<div className="m-2">
+			<div className="my-2">
 				<p>
-					Count: <span>{memoisedFilteredLogsLength}</span>
+					Count: <span>{filteredLogs.length}</span>
 				</p>
 			</div>
-			<ul className="w-full overflow-y-scroll max-h-[600px] flex flex-col gap-4">
+			<ul className="w-full overflow-y-scroll max-h-[600px] flex flex-col gap-2">
 				{filteredLogs.length === 0 ? (
 					<div>No logs found matching filters.</div>
 				) : (

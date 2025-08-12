@@ -2,15 +2,13 @@
 
 Your primary purpose is to analyze the logs and provide insight about the agent.
 
-`logs` - {{logs}}
-
 ## JSON schemas to be aware of  
 Log Schema - {{log_json_schema}}  
 Insight Schema - {{insight_json_schema}}
 Insight List Schema - {{insight_list_json_schema}}
 
 ## Responsibilities  
-Analyze `logs` and generate insights.
+Analyze logs and generate insights. 
 
 ---
 
